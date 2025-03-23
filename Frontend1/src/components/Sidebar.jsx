@@ -6,8 +6,6 @@ import {
   Calendar,
   Users,
   MessageSquare,
-  Bell,
-  BookOpen,
   LogOut,
   ChevronLeft,
   UserCircle
@@ -19,8 +17,6 @@ const menuItems = [
   { icon: Calendar, label: 'Events', path: '/events' },
   { icon: MessageSquare, label: 'Messages', path: '/messages' },
   { icon: Users, label: 'Network', path: '/network' },
-  { icon: Bell, label: 'Notifications', path: '/notifications' },
-  { icon: BookOpen, label: 'Resources', path: '/resources' },
   { icon: UserCircle, label: 'Profile', path: '/profile' },
 ];
 
@@ -68,6 +64,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsOpen(false);
+  };
+
+  const handleLogout = () => {
+    // Remove user data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('username');
+
+    // Reload the page
+    window.location.reload();
   };
 
   return (
@@ -140,7 +146,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <footer className="p-4 border-t border-primary-100">
           <button 
             className="flex items-center w-full px-4 py-3 text-accent-red rounded-lg hover:bg-accent-red/10 transition-all duration-200"
-            onClick={() => console.log('Logout clicked')}
+            onClick={handleLogout}
             aria-label="Logout"
           >
             <LogOut className="h-5 w-5 mr-3" />

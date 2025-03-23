@@ -19,8 +19,9 @@ export default function Hero() {
             <img
               src="https://srmap.edu.in/file/2018/03/SRMAP-Logo.png"
               alt="SRM AP Logo"
-              className="h-24 mx-auto mb-8"
+              className="h-24 mx-auto mb-8 backdrop-blur-sm bg-white/30 p-2 rounded-lg"
             />
+
 
             {/* ✅ Heading */}
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">

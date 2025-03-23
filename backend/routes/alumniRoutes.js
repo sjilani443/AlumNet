@@ -6,6 +6,7 @@ const router = express.Router();
 // ✅ Fetch all alumni
 router.get('/', getAllAlumni);
 
+
 // ✅ Fetch all unique companies
 router.get('/companies', getAllCompanies);
 

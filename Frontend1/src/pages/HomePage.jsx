@@ -15,7 +15,7 @@ export default function HomePage() {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Our Alumni Network</h2>
         </div>
-        <AlumniList limit={6} onSeeAll={() => navigate('/companies')} />
+        <AlumniList limit={9} onSeeAll={() => navigate('/companies')} />
 
         <div className="mt-16">
           <div className="flex justify-between items-center mb-8">
