@@ -150,11 +150,11 @@ export default function EventsList({ limit }) {
             <div className="mt-6 flex space-x-3">
               {registeredEvents.has(event._id) ? (
                 <>
-                  <button className="flex-1 px-4 py-2 bg-[#065F46] text-white rounded-lg flex items-center justify-center cursor-default">
+                  <button className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg flex items-center justify-center cursor-default">
                     Registered <CheckCircle className="h-4 w-4 ml-2" />
                   </button>
                   <button
-                    className="flex-1 px-4 py-2 bg-[#D97706] text-white rounded-lg hover:bg-[#B45309] transition-colors duration-200 flex items-center justify-center"
+                    className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
                     onClick={() => handleUnregister(event._id)}
                   >
                     Unregister <XCircle className="h-4 w-4 ml-2" />

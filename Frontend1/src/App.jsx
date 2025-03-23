@@ -79,9 +79,7 @@ function App() {
               <Route
                 path="/network"
                 element={
-                  <ProtectedRoute>
                     <NetworkPage />
-                  </ProtectedRoute>
                 }
               />
               <Route

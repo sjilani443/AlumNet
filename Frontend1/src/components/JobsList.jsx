@@ -179,14 +179,14 @@ export default function JobsList({ limit }) {
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 {requestedJobs.has(job._id) ? (
                   <button
-                    className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200 text-sm flex items-center justify-center"
+                    className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-colors duration-200 text-sm flex items-center justify-center"
                     onClick={() => handleWithdrawRequest(job._id)}
                   >
                     Withdraw Request <CheckCircle className="h-4 w-4 ml-2" />
                   </button>
                 ) : (
                   <button
-                    className="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors duration-200 text-sm flex items-center justify-center"
+                    className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-800 transition-colors duration-200 text-sm flex items-center justify-center"
                     onClick={() => handleReferralRequest(job._id)}
                   >
                     Request Referral <CheckCircle className="h-4 w-4 ml-2" />
