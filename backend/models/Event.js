@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -11,7 +11,8 @@ const eventSchema = new mongoose.Schema({
   speakerRole: { type: String },
   attendees: { type: Number, default: 0 },
   maxCapacity: { type: Number, required: true },
+  registeredUsers: [{ type: String }], // Array of student emails
 });
 
 const Event = mongoose.model("Event", eventSchema);
-export default Event
+export default Event;

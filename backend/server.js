@@ -29,7 +29,7 @@ app.use(
 // Routes
 app.use("/api/events", eventRoutes);
 app.use("/api/auth",authRoutes);
-app.use("/api/jobs",jobRoutes);
+app.use("/api/referrals",jobRoutes);
 app.use("/api/connections",connectionRoutes);
 app.use("/api/profile",profile);
 app.use('/api/alumni', alumniRoutes);

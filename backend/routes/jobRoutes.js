@@ -1,15 +1,16 @@
 import express from 'express';
 import {
-  createJob,
-  getJobs,
-  getJob,
-  applyForJob
-} from '../controllers/jobController.js';
+  createReferral,
+  getReferrals,
+  requestReferral,
+  withdrawReferral
+} from '../controllers/referralController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { check } from 'express-validator';
 
 const router = express.Router();
 
+// Alumni post a referral
 router.post(
   '/',
   [
@@ -19,14 +20,19 @@ router.post(
       check('company', 'Company is required').not().isEmpty(),
       check('position', 'Position is required').not().isEmpty(),
       check('description', 'Description is required').not().isEmpty(),
-      check('type', 'Job type is required').isIn(['Full-time', 'Part-time', 'Contract', 'Internship'])
+      check('type', 'Referral type is required').isIn(['Full-time', 'Part-time', 'Contract', 'Internship'])
     ]
   ],
-  createJob
+  createReferral
 );
 
-router.get('/get', getJobs);
-router.get('/:id', getJob);
-router.post('/:id/apply', protect, authorize('student'), applyForJob);
+// Get all referrals
+router.get('/', getReferrals);
+
+// Student requests a referral
+router.post('/:id/request', requestReferral);
+
+// Student withdraws a referral request
+router.delete('/:id/withdraw', withdrawReferral);
 
 export default router;

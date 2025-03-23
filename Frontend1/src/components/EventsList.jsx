@@ -1,37 +1,121 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar, MapPin, Users, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Calendar, MapPin, Users, ExternalLink, CheckCircle, XCircle } from "lucide-react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function EventsList({ limit }) {
   const [events, setEvents] = useState([]);
+  const [registeredEvents, setRegisteredEvents] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const userEmail = localStorage.getItem("email"); // ✅ Get email from local storage
 
+  // ✅ Fetch Events & Registered Events
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/events'); // Adjust the URL
-        if (!response.ok) {
-          throw new Error('Failed to fetch events');
-        }
-        const data = await response.json();
-        setEvents(limit ? data.slice(0, limit) : data); // Slice data if limit is provided
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
-  }, [limit]);
+    fetchRegisteredEvents();
+  }, [limit, userEmail]); // ✅ Re-run when userEmail or limit changes
+
+  // ✅ Fetch all events
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("http://localhost:5000/api/events");
+      setEvents(limit ? response.data.slice(0, limit) : response.data);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      setError("Failed to fetch events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Fetch user's registered events (Ensures correct button state)
+  const fetchRegisteredEvents = async () => {
+    if (!userEmail) return;
+    try {
+      const response = await axios.get(`http://localhost:5000/api/events/user/${userEmail}/registered`);
+      const registeredIds = new Set(response.data.map((event) => event._id));
+
+      setRegisteredEvents(registeredIds);
+      localStorage.setItem("registeredEvents", JSON.stringify([...registeredIds])); // ✅ Persist state
+    } catch (err) {
+      console.error("Error fetching registered events:", err);
+    }
+  };
+
+  // ✅ Ensure correct button state on reload
+  useEffect(() => {
+    const storedEvents = localStorage.getItem("registeredEvents");
+    if (storedEvents) {
+      setRegisteredEvents(new Set(JSON.parse(storedEvents)));
+    }
+  }, []);
+
+  // ✅ Handle Register
+  const handleRegister = async (eventId) => {
+    try {
+      if (!userEmail) {
+        toast.error("User not logged in");
+        return;
+      }
+
+      const response = await axios.post(
+        `http://localhost:5000/api/events/${eventId}/register`,
+        { email: userEmail }
+      );
+
+      if (response.status === 200) {
+        toast.success("Successfully registered for the event! 🎉");
+
+        setRegisteredEvents((prev) => {
+          const updatedSet = new Set([...prev, eventId]);
+          localStorage.setItem("registeredEvents", JSON.stringify([...updatedSet])); // ✅ Persist state
+          return updatedSet;
+        });
+      }
+    } catch (error) {
+      console.error("Error registering for event:", error);
+      toast.error(error.response?.data?.message || "Failed to register for event");
+    }
+  };
+
+  // ✅ Handle Unregister
+  const handleUnregister = async (eventId) => {
+    try {
+      if (!userEmail) {
+        toast.error("User not logged in");
+        return;
+      }
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/events/${eventId}/unregister`,
+        { data: { email: userEmail } }
+      );
+
+      if (response.status === 200) {
+        toast.success("Successfully unregistered from the event.");
+
+        setRegisteredEvents((prev) => {
+          const updatedSet = new Set(prev);
+          updatedSet.delete(eventId);
+          localStorage.setItem("registeredEvents", JSON.stringify([...updatedSet])); // ✅ Persist state
+          return updatedSet;
+        });
+      }
+    } catch (error) {
+      console.error("Error unregistering from event:", error);
+      toast.error(error.response?.data?.message || "Failed to unregister from event");
+    }
+  };
 
   if (loading) return <p>Loading events...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {events.map((event) => (
-        <div key={event.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <div key={event._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
           <div className="p-6">
             <div className="flex justify-between items-start">
               <h3 className="text-xl font-semibold text-gray-900">{event.title}</h3>
@@ -64,13 +148,27 @@ export default function EventsList({ limit }) {
               </div>
             )}
             <div className="mt-6 flex space-x-3">
-              <button className="flex-1 px-4 py-2 border border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors duration-200">
-                Add to Calendar
-              </button>
-              <button className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 flex items-center justify-center">
-                Register Now
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </button>
+              {registeredEvents.has(event._id) ? (
+                <>
+                  <button className="flex-1 px-4 py-2 bg-[#065F46] text-white rounded-lg flex items-center justify-center cursor-default">
+                    Registered <CheckCircle className="h-4 w-4 ml-2" />
+                  </button>
+                  <button
+                    className="flex-1 px-4 py-2 bg-[#D97706] text-white rounded-lg hover:bg-[#B45309] transition-colors duration-200 flex items-center justify-center"
+                    onClick={() => handleUnregister(event._id)}
+                  >
+                    Unregister <XCircle className="h-4 w-4 ml-2" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 flex items-center justify-center"
+                  onClick={() => handleRegister(event._id)}
+                >
+                  Register Now
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </button>
+              )}
             </div>
           </div>
         </div>

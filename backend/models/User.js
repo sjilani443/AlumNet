@@ -60,6 +60,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  registeredEvents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event' // Reference to the Event model
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now
