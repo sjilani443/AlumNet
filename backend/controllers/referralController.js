@@ -45,7 +45,7 @@ export const getReferrals = async (req, res) => {
     const referrals = await Referral.find()
       .populate('requestedBy', 'name email')
       .populate('alumni', 'name email company');
-
+      // console.log(referrals)
     res.json({ success: true, count: referrals.length, data: referrals });
   } catch (err) {
     console.error(err);

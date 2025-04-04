@@ -23,6 +23,7 @@ export default function JobsList({ limit }) {
     try {
       setLoading(true);
       const response = await axios.get("http://localhost:5000/api/referrals");
+      console.log(response)
       setJobs(limit ? response.data.data.slice(0, limit) : response.data.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
