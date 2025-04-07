@@ -46,7 +46,7 @@ export default function ProfileView() {
   const handleSave = async () => {
     const token = localStorage.getItem('token');
     if (!token || !profile) return;
-
+  
     try {
       const response = await fetch(`http://localhost:5000/api/profile/${profile.id}`, {
         method: 'PUT',
@@ -56,18 +56,24 @@ export default function ProfileView() {
         },
         body: JSON.stringify(profile),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
-
+  
       const updatedData = await response.json();
       setProfile(updatedData);
+      localStorage.setItem('userName', updatedData.name); // Store updated name in localStorage
       setIsEditing(false);
+  
+      // Reload the page after saving changes
+      window.location.reload();
     } catch (error) {
       console.error('Error saving profile:', error);
     }
   };
+  
+  
 
   const handleInputChange = (field, value) => {
     if (profile) {
