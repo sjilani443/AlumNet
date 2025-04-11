@@ -78,35 +78,57 @@ export default function MessagesView() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!messageInput.trim()) return; // Prevent sending empty messages
-  
-    // ✅ Create new message object
-    const newMessage = {
-      _id: Date.now(), // Temporary unique ID
-      sender: userEmail, // Assuming userEmail is the logged-in user
-      content: messageInput,
-      avatar: "https://via.placeholder.com/40", // Replace with user's actual avatar
-    };
-  
-    // ✅ Update UI immediately before sending to backend
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  
-    try {
-      // ✅ Send message to backend
-      await sendMessageToBackend(newMessage);
-  
-      // ✅ Scroll to bottom after sending
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 800);
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    }
-  
-    // ✅ Clear input field
-    setMessageInput("");
+  // ✅ Send message to backend
+const sendMessageToBackend = async (message) => {
+  const payload = {
+    sender: userEmail,
+    receiver: selectedChat,
+    content: message.content,
   };
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/messages/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.error("Backend responded with status:", response.status);
+      throw new Error("Failed to send message");
+    }
+
+    console.log("✅ Message stored successfully in DB");
+  } catch (error) {
+    console.error("❌ Error sending message to backend:", error);
+  }
+};
+
+// ⬇️ Now your handleSendMessage will use this
+const handleSendMessage = async () => {
+  if (!messageInput.trim()) return;
+
+  const newMessage = {
+    _id: Date.now(),
+    sender: userEmail,
+    content: messageInput,
+    avatar: userAvatar || "https://via.placeholder.com/40",
+  };
+
+  setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+  try {
+    await sendMessageToBackend(newMessage);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  } catch (error) {
+    console.error("Failed to send message:", error);
+  }
+
+  setMessageInput("");
+};
+
   
 
   const handleKeyPress = (e) => {
