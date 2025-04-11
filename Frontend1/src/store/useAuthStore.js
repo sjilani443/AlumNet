@@ -9,14 +9,21 @@ export const useAuthStore = create((set) => ({
 
   login: async (email, password) => {
     try {
-      const { token } = await login({ email, password });
+      const response = await login({ email, password }); // this comes from `lib/api`
+      const { token, user } = response;
+  
       localStorage.setItem('token', token);
+      localStorage.setItem('email', user.email);
+      localStorage.setItem('userName', user.name);
+      localStorage.setItem('role', user.role); // ✅ REAL role from DB
+  
       const decoded = jwtDecode(token);
       set({ token, isAuthenticated: true, user: decoded });
     } catch (error) {
       throw error;
     }
   },
+  
 
   register: async (userData) => {
     try {

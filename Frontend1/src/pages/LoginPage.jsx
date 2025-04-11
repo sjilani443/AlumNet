@@ -9,6 +9,7 @@ export default function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student'); // Default to student
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -17,9 +18,17 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      localStorage.setItem('email', email); // Store email in local storage
-      toast.success('Successfully logged in!');
-      navigate('/');
+      localStorage.setItem('email', email);
+      localStorage.setItem('role', role); // store role in localStorage
+
+      toast.success(`Logged in as ${role}`);
+
+      // Redirect to appropriate home
+      if (role === 'student') {
+        navigate('/student-home');
+      } else {
+        navigate('/alumni-home');
+      }
     } catch (error) {
       toast.error('Invalid credentials');
     } finally {
@@ -46,12 +55,11 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
@@ -69,10 +77,9 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
@@ -90,6 +97,21 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {/* Role Selection */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">Login as</label>
+              <select
+                id="role"
+                name="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              >
+                <option value="student">Student</option>
+                <option value="alumni">Alumni</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -104,7 +126,6 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
-
             <div className="text-sm">
               <button className="font-medium text-primary-600 hover:text-primary-500">
                 Forgot your password?

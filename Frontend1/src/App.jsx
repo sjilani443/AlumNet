@@ -1,126 +1,65 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { Toaster } from 'react-hot-toast';
-import { useAuthStore } from './store/useAuthStore';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import HomePage from './pages/HomePage';
-import JobsPage from './pages/JobsPage';
-import EventsPage from './pages/EventsPage';
-import MessagesPage from './pages/MessagesPage';
-import NetworkPage from './pages/NetworkPage';
-import NotificationsPage from './pages/NotificationsPage';
-import ResourcesPage from './pages/ResourcesPage';
-import ProfilePage from './pages/ProfilePage';
-import CompaniesPage from './pages/CompaniesPage';
-import CompanyDetails from './components/CompanyDetails';
+import StudentHome from './pages/StudentHome';
+import AlumniHome from './pages/AlumniHome';
+import { useAuthStore } from './store/useAuthStore';
 
-const queryClient = new QueryClient();
-
-function ProtectedRoute({ children }) {
+export default function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-}
-
-function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const role = localStorage.getItem('role'); // 'student' or 'alumni'
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Toaster position="top-right" />
-          {isAuthenticated && (
-            <>
-              <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-              <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-            </>
-          )}
-          <div className={isAuthenticated ? 'flex-1' : ''}>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/jobs"
-                element={
-                  <ProtectedRoute>
-                    <JobsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/events"
-                element={
-                  <ProtectedRoute>
-                    <EventsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/messages"
-                element={
-                  <ProtectedRoute>
-                    <MessagesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/network"
-                element={
-                    <NetworkPage />
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <ProtectedRoute>
-                    <NotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/resources"
-                element={
-                  <ProtectedRoute>
-                    <ResourcesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/companies"
-                element={
-                  <ProtectedRoute>
-                    <CompaniesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/company/:companyName" element={<CompanyDetails />} />
-            </Routes>
-          </div>
-        </div>
-      </Router>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+
+        {/* Role-based Protected Routing */}
+        <Route
+          path="/student/*"
+          element={
+            isAuthenticated && role === 'student' ? (
+              <StudentHome />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/alumni/*"
+          element={
+            isAuthenticated && role === 'alumni' ? (
+              <AlumniHome />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        {/* Optional: Root redirection based on role */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              role === 'alumni' ? (
+                <Navigate to="/alumni" />
+              ) : (
+                <Navigate to="/student" />
+              )
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        {/* Catch-all route fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MessageSquare, Search, Menu } from 'lucide-react';
+import { Bell, MessageSquare, Menu } from 'lucide-react';
 
 export default function Navbar({ toggleSidebar }) {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [userName, setUserName] = useState(localStorage.getItem('userName') || ''); 
+  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
   const [loading, setLoading] = useState(!userName);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const role = localStorage.getItem('role'); // 'student' or 'alumni'
+  const basePath = role === 'alumni' ? '/alumni' : '/student';
 
   const notifications = [
     { id: 1, title: 'New connection request', message: 'Sarah Johnson wants to connect with you', time: '5 min ago' },
@@ -37,7 +40,7 @@ export default function Navbar({ toggleSidebar }) {
 
       const data = await response.json();
       setUserName(data.name);
-      localStorage.setItem('userName', data.name); 
+      localStorage.setItem('userName', data.name);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -61,7 +64,7 @@ export default function Navbar({ toggleSidebar }) {
             <button onClick={toggleSidebar} className="p-2 rounded-lg text-primary-500 hover:bg-primary-50 transition-all duration-200 mr-4">
               <Menu className="h-6 w-6" />
             </button>
-            <div className="flex items-center gap-3 cursor-pointer ml-5" onClick={() => navigate('/')}>
+            <div className="flex items-center gap-3 cursor-pointer ml-5" onClick={() => navigate(`${basePath}`)}>
               <img src="https://srmap.edu.in/file/2018/03/SRMAP-Logo.png" alt="SRM AP Logo" className="h-12 w-auto" />
               <div className="flex flex-col">
                 <h1 className="text-2xl font-bold text-primary-500 tracking-tight">AlumNet</h1>
@@ -73,20 +76,12 @@ export default function Navbar({ toggleSidebar }) {
           {/* Right Section */}
           <div className="flex items-center space-x-6">
 
-            {/* Search Bar */}
-            {/* <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-64 pl-10 pr-4 py-2 rounded-xl bg-primary-50 border border-primary-200 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-300 transition-all duration-200"
-              />
-              <Search className="h-5 w-5 text-primary-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            </div> */}
-
             {/* Notifications */}
             <div className="relative">
-              <button className="p-2 text-primary-500 hover:text-accent-yellow transition-all duration-200 hover:scale-110 relative"
-                onClick={() => setShowNotifications(!showNotifications)}>
+              <button
+                className="p-2 text-primary-500 hover:text-accent-yellow transition-all duration-200 hover:scale-110 relative"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 h-2 w-2 bg-accent-red rounded-full ring-2 ring-white animate-pulse"></span>
               </button>
@@ -109,15 +104,23 @@ export default function Navbar({ toggleSidebar }) {
             </div>
 
             {/* Messages */}
-            <button className="p-2 text-primary-500 hover:text-accent-yellow transition-all duration-200 hover:scale-110"
-              onClick={() => navigate('/messages')}>
+            <button
+              className="p-2 text-primary-500 hover:text-accent-yellow transition-all duration-200 hover:scale-110"
+              onClick={() => navigate(`${basePath}/messages`)}
+            >
               <MessageSquare className="h-5 w-5" />
             </button>
 
-            {/* Profile Section */}
-            <button onClick={() => navigate('/profile')} className="flex items-center space-x-2 hover:bg-primary-50 px-3 py-2 rounded-lg transition-colors duration-200">
-              <img src="https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
-                alt="Profile" className="w-8 h-8 rounded-full" />
+            {/* Profile */}
+            <button
+              onClick={() => navigate(`${basePath}/profile`)}
+              className="flex items-center space-x-2 hover:bg-primary-50 px-3 py-2 rounded-lg transition-colors duration-200"
+            >
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
+                alt="Profile"
+                className="w-8 h-8 rounded-full"
+              />
               {loading ? (
                 <span className="text-sm font-medium text-primary-500">Loading...</span>
               ) : error ? (
