@@ -29,7 +29,11 @@ export default function StudentHome() {
       <div className="min-h-screen bg-gray-50">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-
+        <div className="text-center">
+          <span className="text-sm font-medium text-primary-500">
+            Welcome, Student 👋
+          </span>
+        </div>
         <Routes>
           <Route index element={<HomePage />} />
           <Route path="jobs" element={<JobsPage />} />

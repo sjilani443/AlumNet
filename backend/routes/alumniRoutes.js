@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllCompanies, getAlumniByCompany, getAllAlumni } from '../controllers/alumniController.js';
+import { getAllCompanies, getAlumniByCompany, getAllAlumni, getAlumniByEmail } from '../controllers/alumniController.js';
 
 const router = express.Router();
 
@@ -12,5 +12,7 @@ router.get('/companies', getAllCompanies);
 
 // ✅ Fetch alumni by company name
 router.get('/companies/:companyName/alumni', getAlumniByCompany);
+
+router.get('/email/:email', getAlumniByEmail);
 
 export default router;

@@ -43,3 +43,21 @@ export const getAlumniByCompany = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ✅ Get alumni by email
+export const getAlumniByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const alumni = await Alumni.findOne({ email });
+
+    if (!alumni) {
+      return res.status(404).json({ message: "Alumni not found with this email" });
+    }
+
+    res.status(200).json(alumni);
+  } catch (error) {
+    console.error("Error fetching alumni by email:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

@@ -17,7 +17,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(email, password, role); // updated signature
       localStorage.setItem('email', email);
       localStorage.setItem('role', role); // store role in localStorage
 

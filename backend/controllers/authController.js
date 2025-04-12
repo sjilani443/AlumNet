@@ -1,103 +1,132 @@
 import User from '../models/User.js';
+import Alumni from '../models/Alumni.js';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';
 
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE
-  });
-};
+
 
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const { name, email, password, graduationYear, department, company, position, role } = req.body;
+
+    if (!role) {
+      return res.status(400).json({ message: 'Role is required' });
     }
-    console.log("NOT empty");
-    const { name, email, password, role, company, position } = req.body;
 
-    // Check if user exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    console.log("user is new");
-
-    // Create user
-    user = await User.create({
-      name,
-      email,
-      password,
-      role,
-      ...(role === 'alumni' && { company, position })
-    });
-    console.log("YEEEE")
-    // Generate token
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
+    if (role === 'alumni') {
+      // Register as Alumni
+      const existingAlumni = await Alumni.findOne({ email });
+      console.log(existingAlumni)
+      if (existingAlumni) {
+        return res.status(400).json({ message: 'Alumni already registered' });
       }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+
+      const alumni = new Alumni({
+        name,
+        email,
+        graduationYear,
+        branch: department,
+        company,
+        currentRole: position,
+      });
+
+      await alumni.save();
+      return res.status(201).json({ message: 'Alumni registered successfully' });
+
+    } else if (role === 'student') {
+      // Register as User (Student)
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already registered' });
+      }
+
+      const user = new User({
+        name,
+        email,
+        password,
+        graduationYear,
+        department,
+        role,
+      });
+
+      await user.save();
+      return res.status(201).json({ message: 'Student registered successfully' });
+    } else {
+      return res.status(400).json({ message: 'Invalid role specified' });
+    }
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
-
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+};
+
 export const loginUser = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const { email, password, role } = req.body;
+
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'Email, password, and role are required' });
     }
 
-    const { email, password } = req.body;
+    let user;
 
-    // Check for user
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    if (role === 'student') {
+      user = await User.findOne({ email }).select('+password'); // ✅ Explicitly select password
+
+      if (!user) {
+        return res.status(401).json({ message: 'Student not found' });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
+
+    } else if (role === 'alumni') {
+      user = await Alumni.findOne({ email });
+
+      if (!user) {
+        return res.status(401).json({ message: 'Alumni not found' });
+      }
+
+      // Password is not required for alumni, so we skip password check
+    } else {
+      return res.status(400).json({ message: 'Invalid role' });
     }
 
-    // Check if password matches
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    const token = generateToken(user._id, role);
 
-    // Generate token
-    const token = generateToken(user._id);
-
-    res.json({
-      success: true,
+    res.status(200).json({
+      message: 'Login successful',
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: role
       }
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Login error:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
 
 // @desc    Get current logged in user
 // @route   GET /api/auth/me

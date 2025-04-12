@@ -38,10 +38,21 @@ export const register = async (userData) => {
   return response.data;
 };
 
-export const login = async (credentials) => {
-  const response = await api.post('/auth/login', credentials);
-  return response.data;
+export const login = async ({ email, password, role }) => {
+  try {
+    const res = await axios.post('http://localhost:5000/api/auth/login', {
+      email,
+      password,
+      role
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Login failed:", err.response?.data?.message || err.message);
+    throw err;
+  }
 };
+
+
 
 // Connection APIs
 export const sendConnectionRequest = async (receiverId) => {

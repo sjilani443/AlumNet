@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const alumniSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  branch: { type: String, required: true },
+  branch: { type: String },
   graduationYear: { type: Number, required: true },
   currentRole: { type: String },
   company: { type: String },
