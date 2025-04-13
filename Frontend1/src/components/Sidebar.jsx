@@ -61,8 +61,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       }
     };
 
-    fetchUserData();
-  }, []);
+    if (role === 'student') {
+      fetchUserData();
+    } else {
+      setUser({ name: localStorage.getItem('userName') || 'No Name' }); // For alumni, get name from localStorage
+      setLoading(false);
+    }
+  }, [role]);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -105,7 +110,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <section className="p-6 flex items-center space-x-4">
           <div className="relative group">
             <img
-              src="https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
+              src={role === 'alumni' ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZv5fMEw3s3nvP0sxLIG8bO6RzCLmqgzW5ww&s" : "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
               alt="User profile"
               className="w-14 h-14 rounded-full ring-2 ring-primary-100 group-hover:ring-accent-yellow transition-all duration-200 cursor-pointer"
               onClick={() => handleNavigation(`${basePath}/profile`)}
@@ -120,7 +125,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             ) : (
               <>
                 <h3 className="font-semibold text-primary-500">{user?.name}</h3>
-                <p className="text-sm text-primary-400">{user?.branch}</p>
+                {role === 'student' && <p className="text-sm text-primary-400">{user?.branch}</p>}
+                {role === 'alumni' && <p className="text-sm text-primary-400">Alumni</p>}
               </>
             )}
           </div>

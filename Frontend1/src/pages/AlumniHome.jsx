@@ -8,7 +8,7 @@ import HomePage from './Homepage2';
 import EventsPage from './EventsPage';
 import MessagesPage from './MessagesPage';
 import NetworkPage from './NetworkPage';
-import ProfilePage from './ProfilePage';
+import AlumniProfileCard from '../components/AlumniProfileCard';
 
 
 const queryClient = new QueryClient();
@@ -44,7 +44,7 @@ export default function AlumniHome() {
           <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
           <Route path="/network" element={<ProtectedRoute><NetworkPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/profile" element={<AlumniProfileCard/>} />
         </Routes>
       </div>
     </QueryClientProvider>
