@@ -21,14 +21,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const role = localStorage.getItem('role'); // 'student' or 'alumni'
   const basePath = role === 'alumni' ? '/alumni' : '/student';
 
-  const menuItems = [
-    { icon: Home, label: 'Home', path: `${basePath}` },
-    { icon: Briefcase, label: 'Referrals', path: `${basePath}/jobs` },
-    { icon: Calendar, label: 'Events', path: `${basePath}/events` },
-    { icon: MessageSquare, label: 'Messages', path: `${basePath}/messages` },
-    { icon: Users, label: 'Network', path: `${basePath}/network` },
-    { icon: UserCircle, label: 'Profile', path: `${basePath}/profile` },
-  ];
+  const menuItems = role === 'alumni'
+  ? [
+      { icon: Home, label: 'Home', path: `${basePath}` },
+      { icon: MessageSquare, label: 'Messages', path: `${basePath}/messages` },
+      { icon: Users, label: 'Network', path: `${basePath}/network` },
+      { icon: UserCircle, label: 'Profile', path: `${basePath}/profile` },
+    ]
+  : [
+      { icon: Home, label: 'Home', path: `${basePath}` },
+      { icon: Briefcase, label: 'Referrals', path: `${basePath}/jobs` },
+      { icon: Calendar, label: 'Events', path: `${basePath}/events` },
+      { icon: MessageSquare, label: 'Messages', path: `${basePath}/messages` },
+      { icon: Users, label: 'Network', path: `${basePath}/network` },
+      { icon: UserCircle, label: 'Profile', path: `${basePath}/profile` },
+    ];
+
 
   useEffect(() => {
     const fetchUserData = async () => {

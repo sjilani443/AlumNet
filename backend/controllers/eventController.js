@@ -1,5 +1,6 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
+import Alumni from "../models/Alumni.js";
 
 // @desc    Get all events
 // @route   GET /api/events
@@ -73,77 +74,89 @@ export const deleteEvent = async (req, res) => {
 // @access  Private (Students & Alumni)
 export const registerForEvent = async (req, res) => {
   try {
-    console.log("Received Registration Request:", req.body); // ✅ Debugging
-
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
-
-    // ✅ Find user by email
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // ✅ Find event by ID
-    const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
-
-    console.log("User Found:", user);
-    console.log("Event Found:", event);
-
-    // ✅ Check if user is already registered
-    if (user.registeredEvents.includes(event._id)) {
-      return res.status(400).json({ message: "User already registered for this event" });
+    const { email, role ,eventId} = req.body;
+    
+    if (!email || !role || !eventId) {
+      return res.status(400).json({ message: "Email, role, and eventId are required" });
     }
 
-    // ✅ Add event to user's registered events list
-    user.registeredEvents.push(event._id);
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    let user;
+    if (role === "student") {
+      user = await User.findOne({ email });
+    } else if (role === "alumni") {
+      user = await Alumni.findOne({ email });
+    } else {
+      return res.status(400).json({ message: "Invalid role specified" });
+    }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.registeredEvents?.includes(eventId)) {
+      return res.status(400).json({ message: "Already registered for this event" });
+    }
+
+    user.registeredEvents = [...(user.registeredEvents || []), eventId];
     await user.save();
 
-    // ✅ Add student email to event's `registeredUsers` list
-    event.registeredUsers.push(email);
+    event.registeredUsers = [...(event.registeredUsers || []), email];
     await event.save();
 
-    res.status(200).json({ 
-      message: "User successfully registered for the event", 
-      eventId: event._id 
+    return res.status(200).json({
+      message: "Successfully registered for the event",
+      eventId: event._id
     });
-
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-
-// @desc    Unregister a user from an event
-// @route   DELETE /api/events/:id/unregister
-// @access  Private (Students & Alumni)
 export const unregisterFromEvent = async (req, res) => {
+  console.log("🚀 Unregister called with body:", req.body);
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    const { email, role, eventId } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!email || !role || !eventId) {
+      return res.status(400).json({ message: "Email, role, and eventId are required" });
+    }
 
-    // Find event by ID
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Remove event from user's registeredEvents list
-    user.registeredEvents = user.registeredEvents.filter(eventId => eventId.toString() !== event._id.toString());
+    let user;
+    if (role === "student") {
+      user = await User.findOne({ email });
+    } else if (role === "alumni") {
+      user = await Alumni.findOne({ email });
+    } else {
+      return res.status(400).json({ message: "Invalid role specified" });
+    }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    console.log("Before unregister:", user.registeredEvents);
+
+    user.registeredEvents = (user.registeredEvents || []).filter(
+      id => id.toString() !== eventId
+    );
     await user.save();
 
-    // Remove user email from event's registeredUsers list
-    event.registeredUsers = event.registeredUsers.filter(userEmail => userEmail !== email);
+    event.registeredUsers = (event.registeredUsers || []).filter(
+      userEmail => userEmail !== email
+    );
     await event.save();
 
     res.status(200).json({ message: "User successfully unregistered from the event" });
-
   } catch (error) {
+    console.error("Unregistration Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+
 
 
 // @desc    Get user's registered events

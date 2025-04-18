@@ -54,6 +54,8 @@ export default function EventsList({ limit }) {
 
   // ✅ Handle Register
   const handleRegister = async (eventId) => {
+    const userEmail = localStorage.getItem("email");
+    const userRole = localStorage.getItem("role");
     try {
       if (!userEmail) {
         toast.error("User not logged in");
@@ -61,8 +63,12 @@ export default function EventsList({ limit }) {
       }
 
       const response = await axios.post(
-        `http://localhost:5000/api/events/${eventId}/register`,
-        { email: userEmail }
+        `http://localhost:5000/api/events/register`,
+        {
+          email: userEmail,
+          role: userRole,
+          eventId: eventId, // This is correct
+        }
       );
 
       if (response.status === 200) {
@@ -82,20 +88,23 @@ export default function EventsList({ limit }) {
 
   // ✅ Handle Unregister
   const handleUnregister = async (eventId) => {
+    const userEmail = localStorage.getItem("email");
+    const userRole = localStorage.getItem("role");
     try {
       if (!userEmail) {
         toast.error("User not logged in");
         return;
       }
-
-      const response = await axios.delete(
-        `http://localhost:5000/api/events/${eventId}/unregister`,
-        { data: { email: userEmail } }
-      );
-
+  
+      const response = await axios.post(`http://localhost:5000/api/events/unregister`, {
+        email: userEmail,
+        role: userRole,
+        eventId: eventId,
+      });
+  
       if (response.status === 200) {
         toast.success("Successfully unregistered from the event.");
-
+  
         setRegisteredEvents((prev) => {
           const updatedSet = new Set(prev);
           updatedSet.delete(eventId);
@@ -108,6 +117,7 @@ export default function EventsList({ limit }) {
       toast.error(error.response?.data?.message || "Failed to unregister from event");
     }
   };
+  
 
   if (loading) return <p>Loading events...</p>;
   if (error) return <p>{error}</p>;

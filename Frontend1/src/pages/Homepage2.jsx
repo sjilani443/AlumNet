@@ -29,15 +29,7 @@ export default function HomePage() {
           <EventsList limit={2} />
         </div>
 
-        <div className="mt-16">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Job Referrals</h2>
-            <button onClick={() => navigate('/jobs')} className="text-primary-600 hover:text-primary-700 font-medium text-sm">
-              See All
-            </button>
-          </div>
-          <JobsList limit={2} />
-        </div>
+        
       </div>
     </div>
   );

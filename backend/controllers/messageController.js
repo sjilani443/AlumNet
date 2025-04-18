@@ -1,6 +1,29 @@
 import Conversation from "../models/Message.js";
 import User from "../models/User.js";
 
+export const getAllUsers = async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+
+    if (!userEmail) {
+      return res.status(400).json({ message: "User email is required" });
+    }
+
+    const users = await User.find({ email: { $ne: userEmail } }).select("name email avatar").lean();
+
+    const formattedUsers = users.map((user) => ({
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZv5fMEw3s3nvP0sxLIG8bO6RzCLmqgzW5ww&s",
+    }));
+
+    res.json(formattedUsers);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export const sendMessage = async (req, res) => {
   try {
     const { sender, receiver, content } = req.body;

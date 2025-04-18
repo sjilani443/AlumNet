@@ -22,8 +22,9 @@ router.put("/:id", updateEvent); // Update an event (Admin only)
 router.delete("/:id", deleteEvent); // Delete an event (Admin only)
 
 // ✅ Event Registration Routes
-router.post("/:id/register", registerForEvent); // Register for an event
-router.delete("/:id/unregister", unregisterFromEvent); // Unregister from an event
+router.post("/register", registerForEvent); // Register for an event
+router.post("/unregister", unregisterFromEvent);
+ // Unregister from an event
 router.get("/user/:userId/registered-events", getUserRegisteredEvents); // Get user's registered events
 
 export default router;
