@@ -4,7 +4,8 @@ import {
   unsendConnectionRequest, 
   updateConnectionStatus,
   getConnections,
-  getPendingRequests
+  getPendingRequests,
+  approveConnectionRequest
 } from '../controllers/connectionController.js';
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.delete('/unsend', unsendConnectionRequest);
 router.put('/status', updateConnectionStatus);
 router.get('/', getConnections);  
 router.get('/pending', getPendingRequests);  
+router.post('/approve-request', approveConnectionRequest);
 
 export default router;

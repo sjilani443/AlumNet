@@ -1,5 +1,6 @@
 import Alumni from '../models/Alumni.js';
 import User from '../models/User.js';
+import Connection from '../models/Connection.js';
 
 // ✅ **Send Connection Request**
 export const sendConnectionRequest = async (req, res) => {
@@ -142,3 +143,43 @@ export const getPendingRequests = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// ✅ **Approve Request**
+export const approveConnectionRequest = async (req, res) => {
+  try {
+    const { from, to } = req.body;
+
+    if (!from || !to) {
+      return res.status(400).json({ message: 'From and To emails are required' });
+    }
+
+    // Find sender and receiver by email
+    const sender = await User.findOne({ email: from });
+    const receiver = await Alumni.findOne({ email: to }); // Or User, based on use case
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ message: 'Sender or Receiver not found' });
+    }
+
+    // Find the pending connection request
+    const connection = await Connection.findOne({
+      sender: sender._id,
+      receiver: receiver._id,
+      status: 'pending'
+    });
+
+    if (!connection) {
+      return res.status(404).json({ message: 'No pending connection request found' });
+    }
+
+    // Update the status to accepted
+    connection.status = 'accepted';
+    await connection.save();
+
+    res.status(200).json({ message: 'Connection approved successfully' });
+  } catch (error) {
+    console.error('Error in approveConnectionRequest:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
