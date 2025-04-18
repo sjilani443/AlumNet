@@ -36,11 +36,11 @@ export default function AlumniList({ limit = 5, showAll = false }) {
   }, []);
 
   const handleCompanyClick = (companyName) => {
-    navigate(`/company/${encodeURIComponent(companyName)}`);
+    navigate(`/student/company/${encodeURIComponent(companyName)}`);
   };
 
   const handleSeeAll = () => {
-    navigate('/companies');
+    navigate('/student/companies');
   };
 
   const displayedCompanies = showAll ? companies : companies.slice(0, limit);

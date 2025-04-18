@@ -69,41 +69,26 @@ export default function ConnectionSummary() {
     fetchSummary();
   }, [email, token]);
 
-  const handleApprove = async (requestEmail) => {
-    try {
-      const res = await fetch("http://localhost:5000/api/connections/approve-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ from: requestEmail, to: email }),
-      });
-
-      if (!res.ok) throw new Error("Failed to approve request");
-      window.location.reload(); // Or update state for a better experience
-    } catch (err) {
-      console.error("Approval error:", err);
-    }
+  const handleApprove = (requestEmail) => {
+    // 1. Remove user from received requests
+    setReceivedRequestUsers((prev) =>
+      prev.filter((user) => user.email !== requestEmail)
+    );
+  
+    // 2. Increase follower count
+    setAlumni((prevAlumni) => ({
+      ...prevAlumni,
+      followersCount: (prevAlumni.followersCount || 0) + 1,
+    }));
   };
-
-  const handleDecline = async (requestEmail) => {
-    try {
-      const res = await fetch("http://localhost:5000/api/alumni/decline-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ from: requestEmail, to: email }),
-      });
-
-      if (!res.ok) throw new Error("Failed to decline request");
-      window.location.reload(); // Or update state here too
-    } catch (err) {
-      console.error("Decline error:", err);
-    }
+  
+  
+  const handleDecline = (requestEmail) => {
+    setReceivedRequestUsers((prev) =>
+      prev.filter((user) => user.email !== requestEmail)
+    );
   };
+  
 
   if (loading) return <p className="text-center text-gray-500 mt-4">Loading your details...</p>;
   if (error) return <p className="text-center text-red-500 mt-4">{error}</p>;

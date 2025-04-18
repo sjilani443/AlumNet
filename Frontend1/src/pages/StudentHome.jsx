@@ -1,8 +1,7 @@
-// src/pages/StudentHome.jsx
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Toaster } from 'react-hot-toast'; // ✅ Import toast container
+import { Toaster } from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import HomePage from './HomePage';
@@ -23,9 +22,7 @@ export default function StudentHome() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* ✅ Toast messages will appear globally */}
       <Toaster position="top-right" reverseOrder={false} />
-
       <div className="min-h-screen bg-gray-50">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />

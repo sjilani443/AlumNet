@@ -35,7 +35,7 @@ export default function Hero() {
             {/* ✅ Buttons with z-index and pointer-events fix */}
             <div className="mt-12 flex justify-center">
               <button
-                onClick={() => navigate('/network')}
+                onClick={() => navigate('/student/network')}
                 className="px-8 py-4 bg-yellow-500 text-gray-900 rounded-xl font-medium hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-yellow-500/50 z-50 relative pointer-events-auto"
               >
                 Join Network

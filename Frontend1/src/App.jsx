@@ -18,47 +18,48 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        {/* Role-based Protected Routing */}
+        {/* Protected Route: Student */}
         <Route
           path="/student/*"
           element={
             isAuthenticated && role === 'student' ? (
               <StudentHome />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
+        {/* Protected Route: Alumni */}
         <Route
           path="/alumni/*"
           element={
             isAuthenticated && role === 'alumni' ? (
               <AlumniHome />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* Optional: Root redirection based on role */}
+        {/* Root Redirect: Based on Role */}
         <Route
           path="/"
           element={
             isAuthenticated ? (
               role === 'alumni' ? (
-                <Navigate to="/alumni" />
+                <Navigate to="/alumni" replace />
               ) : (
-                <Navigate to="/student" />
+                <Navigate to="/student" replace />
               )
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* Catch-all route fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Fallback for undefined routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
