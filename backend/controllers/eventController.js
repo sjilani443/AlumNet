@@ -33,13 +33,16 @@ export const getEventById = async (req, res) => {
 // @access  Private (Admin)
 export const createEvent = async (req, res) => {
   try {
+    console.log("Incoming data:", req.body); // Log what you receive
     const event = new Event(req.body);
     await event.save();
     res.status(201).json(event);
   } catch (error) {
-    res.status(400).json({ message: "Invalid data" });
+    console.error("Create Event Error:", error.message); // This is key!
+    res.status(400).json({ message: "Invalid data", error: error.message });
   }
 };
+
 
 // @desc    Update an event
 // @route   PUT /api/events/:id

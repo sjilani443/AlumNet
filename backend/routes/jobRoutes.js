@@ -5,34 +5,33 @@ import {
   requestReferral,
   withdrawReferral
 } from '../controllers/referralController.js';
-import { protect, authorize } from '../middleware/auth.js';
 import { check } from 'express-validator';
 
 const router = express.Router();
 
-// Alumni post a referral
+// @route   GET /api/referrals
+// @desc    Get all referrals (Public)
+router.get('/', getReferrals);
+
+// @route   POST /api/referrals
+// @desc    Post a referral
 router.post(
   '/',
   [
-    protect,
-    authorize('alumni'),
-    [
-      check('company', 'Company is required').not().isEmpty(),
-      check('position', 'Position is required').not().isEmpty(),
-      check('description', 'Description is required').not().isEmpty(),
-      check('type', 'Referral type is required').isIn(['Full-time', 'Part-time', 'Contract', 'Internship'])
-    ]
+    check('company', 'Company is required').notEmpty(),
+    check('position', 'Position is required').notEmpty(),
+    check('description', 'Description is required').notEmpty(),
+    check('type', 'Type is required').notEmpty()
   ],
   createReferral
 );
 
-// Get all referrals
-router.get('/', getReferrals);
-
-// Student requests a referral
+// @route   POST /api/referrals/:id/request
+// @desc    Request a referral
 router.post('/:id/request', requestReferral);
 
-// Student withdraws a referral request
+// @route   DELETE /api/referrals/:id/withdraw
+// @desc    Withdraw a referral request
 router.delete('/:id/withdraw', withdrawReferral);
 
 export default router;

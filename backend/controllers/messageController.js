@@ -3,18 +3,18 @@ import User from "../models/User.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    const { userEmail } = req.params;
-
-    if (!userEmail) {
-      return res.status(400).json({ message: "User email is required" });
-    }
-
-    const users = await User.find({ email: { $ne: userEmail } }).select("name email avatar").lean();
+    // Get all users except the current user
+    const currentUserEmail = req.query.userEmail;
+    
+    const query = currentUserEmail ? { email: { $ne: currentUserEmail } } : {};
+    
+    const users = await User.find(query).select("name email avatar role").lean();
 
     const formattedUsers = users.map((user) => ({
       name: user.name,
       email: user.email,
       avatar: user.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZv5fMEw3s3nvP0sxLIG8bO6RzCLmqgzW5ww&s",
+      role: user.role
     }));
 
     res.json(formattedUsers);

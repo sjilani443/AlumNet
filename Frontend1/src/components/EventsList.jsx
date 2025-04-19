@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Calendar, MapPin, Users, ExternalLink, CheckCircle, XCircle } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import AddEvent from "./AddEvent";
 
 export default function EventsList({ limit }) {
   const [events, setEvents] = useState([]);
@@ -9,6 +10,7 @@ export default function EventsList({ limit }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userEmail = localStorage.getItem("email"); // ✅ Get email from local storage
+  const userRole = localStorage.getItem("role"); // Get user role from localStorage
 
   // ✅ Fetch Events & Registered Events
   useEffect(() => {
@@ -123,6 +125,7 @@ export default function EventsList({ limit }) {
   if (error) return <p>{error}</p>;
 
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {events.map((event) => (
         <div key={event._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -184,5 +187,11 @@ export default function EventsList({ limit }) {
         </div>
       ))}
     </div>
+    {userRole === 'alumni' && (
+      <div className="mt-12">
+        <AddEvent />
+      </div>
+    )}
+    </>
   );
 }

@@ -2,9 +2,9 @@ import Referral from '../models/Referral.js';
 import User from '../models/User.js';
 import { validationResult } from 'express-validator';
 
-// @desc    Create a referral posting (Alumni only)
+// @desc    Create a referral posting
 // @route   POST /api/referrals
-// @access  Private (Alumni)
+// @access  Public
 export const createReferral = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -13,14 +13,8 @@ export const createReferral = async (req, res) => {
     }
 
     const { company, position, description, requirements, location, type, referralLink } = req.body;
-    const user = await User.findById(req.user.id);
-
-    if (!user || user.role !== 'alumni') {
-      return res.status(403).json({ message: 'Only alumni can post referrals' });
-    }
 
     const referral = await Referral.create({
-      alumni: user._id,
       company,
       position,
       description,

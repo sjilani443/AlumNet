@@ -3,8 +3,7 @@ import mongoose from 'mongoose';
 const referralSchema = new mongoose.Schema({
   alumni: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   company: {
     type: String,

@@ -17,7 +17,7 @@ router.get("/", getEvents); // Get all events
 router.get("/:id", getEventById); // Get event details by ID
 
 // ✅ Admin Routes (Require authentication)
-router.post("/", createEvent); // Create a new event (Admin only)
+router.post("/create", createEvent); // Create a new event (Admin only)
 router.put("/:id", updateEvent); // Update an event (Admin only)
 router.delete("/:id", deleteEvent); // Delete an event (Admin only)
 

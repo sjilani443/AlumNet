@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Send, Search, MessageSquare, User, Calendar } from "lucide-react";
+import { Send, Search, MessageSquare, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 
-export default function MessagesView() {
+export default function StudentMessagesView() {
   const [chats, setChats] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [alumni, setAlumni] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
@@ -16,16 +15,12 @@ export default function MessagesView() {
 
   const userEmail = localStorage.getItem("email");
   const userName = localStorage.getItem("name");
-  const userRole = localStorage.getItem("role");
-  const userAvatar = userRole === 'student' 
-    ? "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
-    : localStorage.getItem("avatar") || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png";
+  const userAvatar = "https://cdn-icons-png.flaticon.com/512/4537/4537019.png";
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchChats();
-    fetchUsers();
+    fetchAlumni();
   }, []);
 
   useEffect(() => {
@@ -41,7 +36,6 @@ export default function MessagesView() {
       );
       if (!response.ok) throw new Error("Failed to fetch chats");
       const data = await response.json();
-      // Ensure data is an array
       setChats(Array.isArray(data) ? data : []);
       setError(null);
     } catch (error) {
@@ -53,15 +47,15 @@ export default function MessagesView() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchAlumni = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/messages/users?userEmail=${userEmail}`);
-      if (!response.ok) throw new Error("Failed to fetch users");
+      const response = await fetch(`http://localhost:5000/api/alumni`);
+      if (!response.ok) throw new Error("Failed to fetch alumni");
       const data = await response.json();
-      setUsers(Array.isArray(data) ? data : []);
+      setAlumni(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching users:", error);
-      setUsers([]);
+      console.error("Error fetching alumni:", error);
+      setAlumni([]);
     }
   };
 
@@ -116,7 +110,7 @@ export default function MessagesView() {
       _id: Date.now(),
       sender: userEmail,
       content: messageInput,
-      avatar: userAvatar || "https://via.placeholder.com/40",
+      avatar: userAvatar,
     };
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -137,22 +131,21 @@ export default function MessagesView() {
     }
   };
 
-  // For alumni, show all users. For students, show only alumni
-  const filteredUsers = userRole === 'alumni' 
-    ? users.filter(user => user.email !== userEmail)
-    : users.filter(user => user.email !== userEmail && user.role === 'alumni');
+  // Filter alumni based on search query and merge with existing chats
+  const filteredAlumni = alumni
+    .filter(alum => alum.email !== userEmail)
+    .filter(alum => 
+      alum.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      alum.currentRole?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      alum.company?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-  // Ensure chats is an array before filtering
   const mergedUsers = [
-    ...(Array.isArray(chats) ? chats.filter((chat) => filteredUsers.some((user) => user.email === chat.email)) : []),
-    ...filteredUsers.filter(
-      (user) => !chats.some((chat) => chat.email === user.email)
+    ...chats.filter((chat) => filteredAlumni.some((alum) => alum.email === chat.email)),
+    ...filteredAlumni.filter(
+      (alum) => !chats.some((chat) => chat.email === alum.email)
     ),
-  ]
-    .filter((user) =>
-      user.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+  ].sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 
   return (
     <motion.div 
@@ -174,21 +167,10 @@ export default function MessagesView() {
               <MessageSquare className="w-5 h-5 text-primary-600" />
               Messages
             </h2>
-            {userRole === 'alumni' && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/events')}
-                className="w-full flex items-center gap-2 p-2.5 mb-4 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all duration-200"
-              >
-                <Calendar className="w-5 h-5" />
-                <span className="font-medium">Events</span>
-              </motion.button>
-            )}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search messages..."
+                placeholder="Search alumni..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-primary-100 focus:border-primary-300 transition-all duration-200"
@@ -219,9 +201,7 @@ export default function MessagesView() {
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <img
-                        src={user.role === 'student' 
-                          ? "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
-                          : user.avatar || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
+                        src={user.avatar || user.profileImage || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
                         alt={user.name}
                         className="w-12 h-12 rounded-full border-2 border-white shadow-sm"
                       />
@@ -230,6 +210,9 @@ export default function MessagesView() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">{user.name}</h3>
                       <p className="text-sm text-gray-600 truncate">
+                        {user.currentRole} at {user.company}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
                         {user.lastMessage || "Start a conversation"}
                       </p>
                     </div>
@@ -239,7 +222,7 @@ export default function MessagesView() {
             ) : (
               <div className="flex flex-col items-center justify-center h-32 text-gray-500">
                 <User className="w-8 h-8 mb-2" />
-                <p>No users found</p>
+                <p>No alumni found</p>
               </div>
             )}
           </div>
@@ -258,9 +241,9 @@ export default function MessagesView() {
               <div className="p-4 border-b border-gray-200 bg-white">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={mergedUsers.find((c) => c.email === selectedChat)?.role === 'student'
-                      ? "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
-                      : mergedUsers.find((c) => c.email === selectedChat)?.avatar || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
+                    src={mergedUsers.find((c) => c.email === selectedChat)?.avatar || 
+                         mergedUsers.find((c) => c.email === selectedChat)?.profileImage || 
+                         "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
                     alt=""
                     className="w-10 h-10 rounded-full"
                   />
@@ -268,7 +251,9 @@ export default function MessagesView() {
                     <h3 className="font-semibold text-gray-900">
                       {mergedUsers.find((c) => c.email === selectedChat)?.name}
                     </h3>
-                    <p className="text-sm text-gray-500">Online</p>
+                    <p className="text-sm text-gray-500">
+                      {mergedUsers.find((c) => c.email === selectedChat)?.currentRole} at {mergedUsers.find((c) => c.email === selectedChat)?.company}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -326,11 +311,11 @@ export default function MessagesView() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
               <MessageSquare className="w-16 h-16 text-gray-300 mb-4" />
-              <p className="text-gray-500 text-lg">Select a chat to start messaging</p>
+              <p className="text-gray-500 text-lg">Select an alumni to start messaging</p>
             </div>
           )}
         </motion.div>
       </div>
     </motion.div>
   );
-}
+} 
