@@ -34,9 +34,9 @@ export default function AlumniHome() {
 
         {/* ✅ Clean Centered Welcome Line */}
         <div className="text-center">
-          <span className="text-sm font-medium text-primary-500">
+          {/* <span className="text-sm font-medium text-primary-500">
             Welcome, Alumni 👋
-          </span>
+          </span> */}
         </div>
 
         <Routes>

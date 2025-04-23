@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Building2, MapPin, Shield, CheckCircle } from "lucide-react";
+import { Building2, MapPin, Shield, CheckCircle, XCircle } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -183,14 +183,16 @@ export default function JobsList({ limit }) {
                     className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-colors duration-200 text-sm flex items-center justify-center"
                     onClick={() => handleWithdrawRequest(job._id)}
                   >
-                    Withdraw Request <CheckCircle className="h-4 w-4 ml-2" />
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Withdraw Request
                   </button>
                 ) : (
                   <button
                     className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-800 transition-colors duration-200 text-sm flex items-center justify-center"
                     onClick={() => handleReferralRequest(job._id)}
                   >
-                    Request Referral <CheckCircle className="h-4 w-4 ml-2" />
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Request Referral
                   </button>
                 )}
               </div>

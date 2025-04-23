@@ -109,15 +109,40 @@ export const updateConnectionStatus = async (req, res) => {
 // ✅ **Get User's Connections**
 export const getConnections = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.user.email });
+    const { email } = req.query;
 
-    if (!user) {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+    const alumni = await Alumni.findOne({ email });
+
+    if (!user && !alumni) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Get connections from either user or alumni
+    const connections = user ? user.connections : alumni.connections;
+
+    // Fetch full details of connected users
+    const connectionDetails = await Promise.all(
+      connections.map(async (conn) => {
+        const connectedUser = await User.findOne({ email: conn.email }) || 
+                            await Alumni.findOne({ email: conn.email });
+        return {
+          name: connectedUser.name,
+          email: connectedUser.email,
+          profileImage: connectedUser.profileImage || connectedUser.avatar,
+          course: connectedUser.course || connectedUser.department,
+          batch: connectedUser.batch || connectedUser.graduationYear
+        };
+      })
+    );
+
     res.json({
       success: true,
-      data: user.connections,
+      data: connectionDetails,
     });
   } catch (err) {
     console.error('Error fetching connections:', err);
@@ -128,15 +153,35 @@ export const getConnections = async (req, res) => {
 // ✅ **Get Pending Connection Requests**
 export const getPendingRequests = async (req, res) => {
   try {
-    const alumni = await Alumni.findOne({ email: req.user.email });
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const alumni = await Alumni.findOne({ email });
 
     if (!alumni) {
       return res.status(404).json({ message: 'Alumni not found' });
     }
 
+    // Fetch full details of users who sent requests
+    const requestDetails = await Promise.all(
+      alumni.requests.map(async (requestEmail) => {
+        const user = await User.findOne({ email: requestEmail });
+        return {
+          name: user.name,
+          email: user.email,
+          profileImage: user.avatar,
+          course: user.department,
+          batch: user.graduationYear
+        };
+      })
+    );
+
     res.json({
       success: true,
-      data: alumni.requests,
+      data: requestDetails,
     });
   } catch (err) {
     console.error('Error fetching pending requests:', err);

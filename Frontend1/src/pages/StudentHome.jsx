@@ -37,8 +37,8 @@ export default function StudentHome() {
           <Route path="events" element={<EventsPage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="network" element={<NetworkPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="resources" element={<ResourcesPage />} />
+          {/* <Route path="notifications" element={<NotificationsPage />} /> */}
+          {/* <Route path="resources" element={<ResourcesPage />} /> */}
           <Route path="profile" element={<ProfilePage />} />
           <Route path="companies" element={<CompaniesPage />} />
           <Route path="company/:companyName" element={<CompanyDetails />} />

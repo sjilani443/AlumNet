@@ -52,8 +52,6 @@ export const login = async ({ email, password, role }) => {
   }
 };
 
-
-
 // Connection APIs
 export const sendConnectionRequest = async (receiverId) => {
   const response = await api.post('/connections/request', { receiverId });
@@ -62,6 +60,17 @@ export const sendConnectionRequest = async (receiverId) => {
 
 export const updateConnectionStatus = async (requestId, status) => {
   const response = await api.put(`/connections/${requestId}`, { status });
+  return response.data;
+};
+
+export const getConnections = async () => {
+  const email = localStorage.getItem('email');
+  const response = await api.get('/connections', { params: { email } });
+  return response.data;
+};
+
+export const unsendConnectionRequest = async (receiverId) => {
+  const response = await api.delete('/connections/unsend', { data: { receiverId } });
   return response.data;
 };
 

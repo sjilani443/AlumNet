@@ -9,6 +9,8 @@ import {
   LogOut,
   ChevronLeft,
   UserCircle,
+  Bell,
+  Settings,
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -27,6 +29,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       { icon: MessageSquare, label: 'Messages', path: `${basePath}/messages` },
       { icon: Users, label: 'Network', path: `${basePath}/network` },
       { icon: UserCircle, label: 'Profile', path: `${basePath}/profile` },
+      // { icon: Bell, label: 'Notifications', path: `${basePath}/notifications` },
+      { icon: Calendar, label: 'Events', path: `${basePath}/events` },
+      // { icon: Settings, label: 'Settings', path: `${basePath}/settings` },
     ]
   : [
       { icon: Home, label: 'Home', path: `${basePath}` },
@@ -35,6 +40,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       { icon: MessageSquare, label: 'Messages', path: `${basePath}/messages` },
       { icon: Users, label: 'Network', path: `${basePath}/network` },
       { icon: UserCircle, label: 'Profile', path: `${basePath}/profile` },
+      // { icon: Bell, label: 'Notifications', path: `${basePath}/notifications` },
+      // { icon: Settings, label: 'Settings', path: `${basePath}/settings` },
     ];
 
 

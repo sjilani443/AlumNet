@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { CheckCircle, XCircle, UserPlus, Users } from "lucide-react";
 
 export default function ConnectionSummary() {
   const [alumni, setAlumni] = useState(null);
-  const [pendingRequestUsers, setPendingRequestUsers] = useState([]);
-  const [receivedRequestUsers, setReceivedRequestUsers] = useState([]);
+  const [receivedRequests, setReceivedRequests] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email");
+  const userRole = localStorage.getItem("role");
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchData = async () => {
       if (!email || !token) {
         setError("Missing token or email.");
         setLoading(false);
@@ -19,164 +23,204 @@ export default function ConnectionSummary() {
       }
 
       try {
-        // Fetch alumni profile by email
-        const res = await fetch(
+        // Fetch alumni profile
+        const alumniRes = await axios.get(
           `http://localhost:5000/api/alumni/email/${encodeURIComponent(email)}`,
-          {
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setAlumni(alumniRes.data);
+
+        // Fetch pending connection requests
+        const requestsRes = await axios.get(
+          "http://localhost:5000/api/connections/pending",
+          { 
             headers: { Authorization: `Bearer ${token}` },
+            params: { email }
           }
         );
+        setReceivedRequests(requestsRes.data.data || []);
 
-        if (!res.ok) throw new Error("Failed to fetch alumni data");
-        const data = await res.json();
-        setAlumni(data);
-
-        // Fetch details of users who sent requests to this alumni
-        const requestSendersRes = await fetch(
-          `http://localhost:5000/api/profile/alumni/request-senders?email=${encodeURIComponent(email)}`,
-          {
+        // Fetch connections
+        const connectionsRes = await axios.get(
+          "http://localhost:5000/api/connections",
+          { 
             headers: { Authorization: `Bearer ${token}` },
+            params: { email }
           }
         );
+        setConnections(connectionsRes.data.data || []);
 
-        if (requestSendersRes.ok) {
-          const senders = await requestSendersRes.json();
-          setReceivedRequestUsers(senders);
-        }
-
-        // Fetch details of alumni to whom this alumni has sent requests
-        if (Array.isArray(data.pendingRequests)) {
-          const pending = await Promise.all(
-            data.pendingRequests.map(async (pendingEmail) => {
-              const res = await fetch(
-                `http://localhost:5000/api/alumni/email/${pendingEmail}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                }
-              );
-              return await res.json();
-            })
-          );
-          setPendingRequestUsers(pending);
-        }
       } catch (err) {
+        console.error("Error fetching data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSummary();
+    fetchData();
   }, [email, token]);
 
-  const handleApprove = (requestEmail) => {
-    // 1. Remove user from received requests
-    setReceivedRequestUsers((prev) =>
-      prev.filter((user) => user.email !== requestEmail)
-    );
-  
-    // 2. Increase follower count
-    setAlumni((prevAlumni) => ({
-      ...prevAlumni,
-      followersCount: (prevAlumni.followersCount || 0) + 1,
-    }));
+  const handleApprove = async (requestEmail) => {
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/connections/status",
+        {
+          userEmail: requestEmail,
+          alumniEmail: email,
+          status: "accepted"
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.status === 200) {
+        setReceivedRequests(prev => prev.filter(req => req.email !== requestEmail));
+        
+        // Fetch the updated connections list
+        const connectionsRes = await axios.get(
+          "http://localhost:5000/api/connections",
+          { 
+            headers: { Authorization: `Bearer ${token}` },
+            params: { email }
+          }
+        );
+        setConnections(connectionsRes.data.data || []);
+        
+        // Update alumni followers count
+        setAlumni(prev => ({
+          ...prev,
+          followersCount: (prev.followersCount || 0) + 1
+        }));
+
+        toast.success("Connection request accepted successfully!");
+      }
+    } catch (error) {
+      console.error("Error accepting connection request:", error);
+      toast.error("Failed to accept connection request");
+    }
   };
-  
-  
-  const handleDecline = (requestEmail) => {
-    setReceivedRequestUsers((prev) =>
-      prev.filter((user) => user.email !== requestEmail)
-    );
+
+  const handleDecline = async (requestEmail) => {
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/connections/status",
+        {
+          userEmail: requestEmail,
+          alumniEmail: email,
+          status: "declined"
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.status === 200) {
+        setReceivedRequests(prev => prev.filter(req => req.email !== requestEmail));
+        toast.success("Connection request declined successfully!");
+      }
+    } catch (error) {
+      console.error("Error declining connection request:", error);
+      toast.error("Failed to decline connection request");
+    }
   };
-  
 
   if (loading) return <p className="text-center text-gray-500 mt-4">Loading your details...</p>;
   if (error) return <p className="text-center text-red-500 mt-4">{error}</p>;
   if (!alumni) return <p className="text-center text-gray-500 mt-4">No alumni found for this email.</p>;
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-6 mt-6 max-w-7xl mx-auto">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Your Connection Overview</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white shadow-md rounded-xl p-6">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Your Connection Overview</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
-        <div className="bg-primary-50 p-5 rounded-lg">
-          <p className="text-3xl font-bold text-primary-600">{alumni.followersCount || 0}</p>
-          <p className="text-sm text-gray-600">Followers</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <div className="bg-primary-50 p-6 rounded-lg shadow-sm">
+            <p className="text-4xl font-bold text-primary-600">{receivedRequests.length}</p>
+            <p className="text-sm text-gray-600 mt-2">Connection Requests</p>
+          </div>
+
+          <div className="bg-primary-50 p-6 rounded-lg shadow-sm">
+            <p className="text-4xl font-bold text-primary-600">{connections.length}</p>
+            <p className="text-sm text-gray-600 mt-2">Total Connections</p>
+          </div>
         </div>
 
-        <div className="bg-primary-50 p-5 rounded-lg">
-          <p className="text-3xl font-bold text-primary-600">{receivedRequestUsers.length}</p>
-          <p className="text-sm text-gray-600">Requests Received</p>
-        </div>
+        {/* Connection Requests */}
+        {receivedRequests.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary-600" />
+              Connection Requests
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {receivedRequests.map((request, idx) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-4 border hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
+                      alt={request.name}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800">{request.name}</p>
+                      <p className="text-sm text-gray-500">{request.email}</p>
+                      {request.course && <p className="text-sm text-gray-500">Course: {request.course}</p>}
+                      {request.batch && <p className="text-sm text-gray-500">Batch: {request.batch}</p>}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200"
+                      onClick={() => handleApprove(request.email)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Accept
+                    </button>
+                    <button
+                      className="flex-1 flex items-center justify-center gap-2 text-sm bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                      onClick={() => handleDecline(request.email)}
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Your Connections */}
+        {connections.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary-600" />
+              Your Connections
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {connections.map((connection, idx) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-4 border hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/512/4537/4537019.png"
+                      alt={connection.name}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-800">{connection.name}</p>
+                      <p className="text-sm text-gray-500">{connection.email}</p>
+                      {connection.course && <p className="text-sm text-gray-500">Course: {connection.course}</p>}
+                      {connection.batch && <p className="text-sm text-gray-500">Batch: {connection.batch}</p>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Requests You Sent (Pending) */}
-      {pendingRequestUsers.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-md font-semibold text-gray-700 mb-3">Requests You Sent</h3>
-          <ul className="space-y-3">
-            {pendingRequestUsers.map((req, idx) => (
-              <li key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={req.profileImage || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
-                    alt={req.name}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-800">{req.name}</p>
-                    <p className="text-sm text-gray-500">{req.email}</p>
-                    {req.course && <p className="text-sm text-gray-500">Course: {req.course}</p>}
-                    {req.batch && <p className="text-sm text-gray-500">Batch: {req.batch}</p>}
-                    {req.location && <p className="text-sm text-gray-500">Location: {req.location}</p>}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Requests Received */}
-      {receivedRequestUsers.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-md font-semibold text-gray-700 mb-3">Connection Requests Received</h3>
-          <ul className="space-y-3">
-            {receivedRequestUsers.map((user, idx) => (
-              <li key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={user.profileImage || "https://cdn-icons-png.flaticon.com/512/4537/4537019.png"}
-                    alt={user.name}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-800">{user.name}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                    {user.course && <p className="text-sm text-gray-500">Course: {user.course}</p>}
-                    {user.batch && <p className="text-sm text-gray-500">Batch: {user.batch}</p>}
-                    {user.location && <p className="text-sm text-gray-500">Location: {user.location}</p>}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    className="text-sm bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700"
-                    onClick={() => handleApprove(user.email)}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600"
-                    onClick={() => handleDecline(user.email)}
-                  >
-                    Decline
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
