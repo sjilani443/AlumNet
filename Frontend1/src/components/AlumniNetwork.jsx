@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, UserPlus, Users, UserCheck, Mail } from "lucide-react";
 import { getConnections, sendConnectionRequest, unsendConnectionRequest } from "../lib/api";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function AlumniNetwork() {
@@ -10,6 +11,7 @@ export default function AlumniNetwork() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email");
@@ -59,6 +61,10 @@ export default function AlumniNetwork() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleMessage = (userEmail) => {
+    navigate(`/alumni/messages?chat=${userEmail}`);
   };
 
   const filteredConnections = connections.filter((user) =>
@@ -136,7 +142,10 @@ export default function AlumniNetwork() {
                     </div>
 
                     <div className="mt-6 flex space-x-3">
-                      <button className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors duration-200 flex items-center justify-center">
+                      <button 
+                        onClick={() => handleMessage(user.email)}
+                        className="flex-1 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors duration-200 flex items-center justify-center"
+                      >
                         Message
                         <Mail className="h-4 w-4 ml-2" />
                       </button>
@@ -190,7 +199,10 @@ export default function AlumniNetwork() {
                     </div>
 
                     <div className="mt-6 flex space-x-3">
-                      <button className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors duration-200 flex items-center justify-center">
+                      <button 
+                        onClick={() => handleMessage(user.email)}
+                        className="flex-1 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors duration-200 flex items-center justify-center"
+                      >
                         Message
                         <Mail className="h-4 w-4 ml-2" />
                       </button>

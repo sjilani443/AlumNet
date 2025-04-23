@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -19,6 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const [user, setUser] = useState({ name: '', branch: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const sidebarRef = useRef(null);
 
   const role = localStorage.getItem('role'); // 'student' or 'alumni'
   const basePath = role === 'alumni' ? '/alumni' : '/student';
@@ -84,6 +85,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     }
   }, [role]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, setIsOpen]);
+
   const handleNavigation = (path) => {
     navigate(path);
     setIsOpen(false);
@@ -107,6 +124,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       )}
 
       <aside
+        ref={sidebarRef}
         className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}

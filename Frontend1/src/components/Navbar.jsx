@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, MessageSquare, Menu } from 'lucide-react';
 
@@ -8,6 +8,7 @@ export default function Navbar({ toggleSidebar }) {
   const [loading, setLoading] = useState(!userName);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const notificationRef = useRef(null);
 
   const role = localStorage.getItem('role'); // 'student' or 'alumni'
   const basePath = role === 'alumni' ? '/alumni' : '/student';
@@ -60,6 +61,19 @@ export default function Navbar({ toggleSidebar }) {
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <nav className="bg-white/90 backdrop-blur-md border-b border-primary-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,7 +97,7 @@ export default function Navbar({ toggleSidebar }) {
           <div className="flex items-center space-x-6">
 
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <button
                 className="p-2 text-primary-500 hover:text-accent-yellow transition-all duration-200 hover:scale-110 relative"
                 onClick={() => setShowNotifications(!showNotifications)}

@@ -26,19 +26,19 @@ export default function StudentHome() {
       <div className="min-h-screen bg-gray-50">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <div className="text-center">
+        {/* <div className="text-center">
           <span className="text-sm font-medium text-primary-500">
             Welcome, Student 👋
           </span>
-        </div>
+        </div> */}
         <Routes>
           <Route index element={<HomePage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="events" element={<EventsPage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="network" element={<NetworkPage />} />
-          {/* <Route path="notifications" element={<NotificationsPage />} /> */}
-          {/* <Route path="resources" element={<ResourcesPage />} /> */}
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="resources" element={<ResourcesPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="companies" element={<CompaniesPage />} />
           <Route path="company/:companyName" element={<CompanyDetails />} />

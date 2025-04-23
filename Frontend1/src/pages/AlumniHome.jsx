@@ -33,11 +33,11 @@ export default function AlumniHome() {
         )}
 
         {/* ✅ Clean Centered Welcome Line */}
-        <div className="text-center">
-          {/* <span className="text-sm font-medium text-primary-500">
+        {/* <div className="text-center">
+          <span className="text-sm font-medium text-primary-500">
             Welcome, Alumni 👋
-          </span> */}
-        </div>
+          </span>
+        </div> */}
 
         <Routes>
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />

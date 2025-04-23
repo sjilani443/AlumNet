@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Building2 } from 'lucide-react';
 
 const companyLogos = {
   Amazon: 'https://1000logos.net/wp-content/uploads/2016/10/Amazon-Logo-2000.png',
@@ -55,7 +56,11 @@ export default function AlumniList({ limit = 5, showAll = false }) {
             className="relative group p-2 rounded-lg border transition-all duration-200 border-gray-200 hover:border-primary-300 hover:bg-gray-50"
           >
             <div className="aspect-video flex items-center justify-center p-1">
-              <img src={companyLogos[company] || 'https://via.placeholder.com/150'} alt={company} className="max-h-10 w-auto object-contain" />
+              {companyLogos[company] ? (
+                <img src={companyLogos[company]} alt={company} className="max-h-10 w-auto object-contain" />
+              ) : (
+                <Building2 className="h-10 w-10 text-gray-400" />
+              )}
             </div>
             <p className="text-xs text-center mt-1 font-medium text-gray-700">{company}</p>
           </button>
@@ -68,7 +73,7 @@ export default function AlumniList({ limit = 5, showAll = false }) {
             onClick={handleSeeAll}
             className="text-primary-600 text-sm font-bold hover:underline"
           >
-            See All Componies
+            See All Companies
           </button>
         </div>
       )}

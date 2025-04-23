@@ -5,6 +5,15 @@ import { ArrowRight, Users, Briefcase, Calendar } from "lucide-react";
 
 export default function Hero() {
   const navigate = useNavigate();
+  const role = localStorage.getItem('role') || 'student';
+
+  const handleJoinNetwork = () => {
+    if (role === 'student') {
+      navigate('/student/network');
+    } else {
+      navigate('/alumni/network');
+    }
+  };
 
   const fadeUp = {
     hidden: { opacity: 0, y: 40 },
@@ -64,17 +73,18 @@ export default function Hero() {
 
               <motion.div variants={fadeUp} custom={2} className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => navigate("/student/network")}
+                  onClick={() => {
+                    const role = localStorage.getItem('role') || 'student';
+                    if (role === 'student') {
+                      navigate('/student/network');
+                    } else {
+                      navigate('/alumni/network');
+                    }
+                  }}
                   className="group flex items-center gap-2 px-8 py-4 bg-yellow-500 text-gray-900 rounded-xl font-medium hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-yellow-500/50"
                 >
                   Join Network
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button
-                  onClick={() => navigate("/about")}
-                  className="px-8 py-4 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-all duration-300 backdrop-blur-sm"
-                >
-                  Learn More
                 </button>
               </motion.div>
             </motion.div>
