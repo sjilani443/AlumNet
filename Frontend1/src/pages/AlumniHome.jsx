@@ -43,7 +43,7 @@ export default function AlumniHome() {
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-          <Route path="/network" element={<ProtectedRoute><NetworkPage /></ProtectedRoute>} />
+          <Route path="/network" element={<NetworkPage />} />
           <Route path="/profile" element={<AlumniProfileCard/>} />
         </Routes>
       </div>
